@@ -34,15 +34,15 @@ Before running the project, ensure you have the following installed:
     The backend server will start running at http://localhost:3001.
 
 4. Frontend:  
-    3.1. Navigate to the frontend directory:
+    4.1. Navigate to the frontend directory:
     ```bash
     cd frontend
     ```
-    3.2. Install dependencies:
+    4.2. Install dependencies:
     ```bash
     npm install
     ```
-    3.3. Start the frontend server:
+    4.3. Start the frontend server:
     ```bash
     npm run dev
     ```
