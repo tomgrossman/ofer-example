@@ -25,7 +25,7 @@ const LoginForm: React.FC = () => {
       // Assuming your backend returns a status code indicating success (e.g., 200)
       if (response.status >= HttpStatusCode.Ok && response.status < HttpStatusCode.MultipleChoices) {
         console.log('Logged in successfully!');
-        router.push('/math-form');
+        router.push('/tne-form');
       } else {
         // Handle other status codes (e.g., 401 for unauthorized)
         setError('Invalid email or password');

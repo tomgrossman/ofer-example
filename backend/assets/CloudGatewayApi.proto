@@ -1,0 +1,167 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package cloud.gateway;
+
+enum PhoneNumberType {
+  UNSET = 0;
+  INTERNATIONAL = 1;
+  DOMESTIC = 2;
+}
+
+enum ErrorCode {
+  GENERIC_ERROR = 0;
+  VENDOR_ERROR = 1;
+  INTERNAL_ERROR = 2;
+  QUOTA_EXCEEDED = 3;
+  AUTHENTICATION_ERROR = 4;
+}
+
+enum RadioAccessTechnology {
+  GSM = 0;
+  UMTS = 1;
+  LTE = 2;
+}
+
+message Request {
+  string clientId = 1;
+
+
+  oneof request {
+    KeysRequest keysRequest = 2;
+    MsisdnRequest msisdnRequest = 3;
+    SendSmsRequest sendSmsRequest = 4;
+    StartCallForwardingRequest startCallForwardingRequest = 5;
+    StopCallForwardingRequest stopCallForwardingRequest = 6;
+    QuotaRequest quotaRequest = 7;
+    MonitoringRequest monitoringRequest = 8;
+  }
+}
+
+message Response {
+  oneof response {
+    KeysResponse keysResponse = 1;
+    MsisdnResponse msisdnResponse = 2;
+    SendSmsResponse sendSmsResponse = 3;
+    StartCallForwardingResponse startCallForwardingResponse = 4;
+    StopCallForwardingResponse stopCallForwardingResponse = 5;
+    Error error = 10;
+  }
+}
+
+message KeysRequest {
+  string imsi = 1;
+  int32 numberOfVectors = 2;
+  RadioAccessTechnology technology = 3;
+  bool refresh = 4;
+  Plmn plmn = 5;
+}
+
+message Plmn {
+  string mcc = 1;
+  string mnc = 2;
+}
+
+message KeysResponse {
+  string imsi = 1;
+  repeated AuthenticationVector authenticationVector = 2;
+}
+
+message AuthenticationVector {
+  string rand = 1;                        // LTE/UMTS/GSM: rand
+  string xres = 2;                        // LTE/UMTS: xres
+  string sres = 3;                        // GSM: sres
+  string auth_token = 4;                  // LTE/UMTS: autn
+  string cipher_key = 5;                  // GSM: Kc, UMTS: CK
+  string cipher_key_sequence_number = 6;  // GSM: cksn
+  string integrity_key = 7;               // UMTS: IK
+  string kasme = 8;                       // LTE: kasme
+}
+
+message MsisdnRequest {
+  string imsi = 1;
+}
+
+message MsisdnResponse {
+  string imsi = 1;
+  string msisdn = 2;
+}
+
+message SendSmsRequest {
+  string sourceMsisdn = 1;
+  string destinationMsisdn = 2;
+  string content = 3;
+}
+
+message SendSmsResponse {
+  string sourceMsisdn = 1;
+}
+
+message StartCallForwardingRequest {
+  string imsiFrom = 1;
+  string isdnTo = 2;
+  PhoneNumberType phoneNumberType = 3;
+}
+
+message StartCallForwardingResponse {
+  string imsi = 1;
+}
+
+message StopCallForwardingRequest {
+  string imsi = 1;
+  string isdnTo = 2;
+}
+
+message StopCallForwardingResponse {
+  string imsi = 1;
+}
+
+message Error {
+  ErrorCode errorCode = 1;
+  string message = 2;
+}
+
+message Quota {
+  int32 total = 1;
+  int32 remaining = 2;
+  string partner = 3;
+}
+
+message StreamRequest {
+  repeated Request request = 1;
+}
+enum Provider {
+  MVNO = 0;
+  SMS_PROVIDER = 1;
+}
+message ServiceProvider {
+  Provider provider = 1;
+  Quota quota = 2;
+}
+
+message QuotaRequest {}
+
+message QuotaResponse {
+  repeated ServiceProvider serviceProvider = 1;
+}
+
+message MonitoringRequest {}
+
+message Measurement {
+  Provider provider = 1;
+  bool reachable = 2;
+}
+
+service CloudGateway {
+  rpc getData(Request) returns (Response) {
+  }
+
+  rpc getStreamData(stream StreamRequest) returns (stream Response) {
+  }
+
+  rpc subscribeQuota(stream StreamRequest) returns (stream QuotaResponse) {
+  }
+
+  rpc subscribeMonitoring(stream StreamRequest) returns (stream Measurement) {
+  }
+}
